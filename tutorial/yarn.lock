@@ -58,16 +58,17 @@ accepts@~1.3.4:
     mime-types "~2.1.16"
     negotiator "0.6.1"
 
-aerographql-core@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/aerographql-core/-/aerographql-core-0.0.2.tgz#e9068a53aa4c38bf1c842185abb974e15e8aa2c1"
+aerographql-core@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/aerographql-core/-/aerographql-core-0.0.3.tgz#b0fbf2ee85185953c08b126101109171abd9050c"
   dependencies:
     reflect-metadata "^0.1.10"
 
-"aerographql-schema@file:../../packages/packages/schema":
-  version "0.0.18"
+aerographql-schema@^0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/aerographql-schema/-/aerographql-schema-0.0.19.tgz#953aec1fb00e76c581c3b6d44ed92e83a1fc107b"
   dependencies:
-    aerographql-core "^0.0.2"
+    aerographql-core "^0.0.3"
     graphql "^0.12.3"
 
 ansi-styles@^3.1.0:
