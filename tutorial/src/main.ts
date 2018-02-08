@@ -1,8 +1,9 @@
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as jsonwebtoken from 'jsonwebtoken';
 
-import { Injectable, Middleware, BaseMiddleware , Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql-schema';
+import { Injectable, Middleware, BaseMiddleware, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql-schema';
 
 /** 
  * Fake Database objects
@@ -30,14 +31,6 @@ let todos: { [ key: string ]: ( PonctualTodo | RecurentTodo )[] } =
             { id: '8', title: 'Todo3', content: 'Steeve Todo3 content', occurence: 'Every Day' } ]
     };
 
-@Middleware()
-class AuthMiddleware implements BaseMiddleware<any> {
-    execute( src: any, args: any, context: any, options: any ) {
-        console.log( 'From the middleware' );
-        return false;
-    }
-}
-
 /** 
  * Custom service to interact with the DB
 */
@@ -47,6 +40,36 @@ class UserService {
         return users.find( u => u.name === name );
     }
 }
+
+/** 
+ * Context definitions
+*/
+interface Context {
+    req: express.Request;
+    user: User;
+}
+
+/**
+ * Authentication middleware
+ */
+@Middleware()
+class AuthMiddleware implements BaseMiddleware<any> {
+    constructor( private userService: UserService ) { }
+    execute( src: any, args: any, context: Context, options: any ) {
+        let token  = context.req.headers[ 'Authorization' ] as string;
+        try {
+            jsonwebtoken.verify( token, 'secret' );
+        }
+        catch ( e ) {
+            throw 'Invalid token' + e;
+        }
+
+        let payload = jsonwebtoken.decode( token ) as any;
+        let u = this.userService.find( payload.name );
+        return u;
+    }
+}
+
 
 /** 
  * Schema definitions
@@ -86,13 +109,13 @@ export class RecurentTodo {
 @ObjectImplementation( { name: 'User' } )
 export class UserImpl {
 
-    @Resolver( { type: Todo, list: true} )
+    @Resolver( { type: Todo, list: true } )
     todos( user: User, @Arg( { nullable: true } ) search: string ) {
         return todos[ user.name ];
     }
 }
 
-@ObjectImplementation( { name: 'RootQuery', middlewares: [ { provider: AuthMiddleware } ]  } )
+@ObjectImplementation( { name: 'RootQuery' } )
 export class RootQuery {
     constructor( private userService: UserService ) { }
 
@@ -100,8 +123,13 @@ export class RootQuery {
     user( @Arg() name: string ): User | Promise<User> {
         return this.userService.find( name );
     }
-}
 
+    @Resolver( { type: User, nullable: true, middlewares: [ { provider: AuthMiddleware, resultName: 'user' } ] } )
+    viewer( previous: any, context:Context ): User | Promise<User> {
+        return context.user;
+    }
+
+}
 @Schema( {
     rootQuery: 'RootQuery',
     components: [ RootQuery, User, UserImpl, Todo, PonctualTodo, RecurentTodo ],
@@ -113,9 +141,15 @@ export class MySchema extends BaseSchema {
 /** 
  * Actual server code 
 */
+let fakeJWT = ( req: any, rep: any, next: any ) => {
+    req.headers[ 'Authorization' ] = jsonwebtoken.sign( { name: "Bob" }, 'secret' );
+    next();
+}
 let mySchema = new MySchema();
 this.app = express();
-this.app.use( '/graphql', bodyParser.json(), graphqlExpress( { schema: mySchema.graphQLSchema } ) );
+this.app.use( '/graphql', bodyParser.json(), fakeJWT, graphqlExpress( ( req, res ) => {
+    return { schema: mySchema.graphQLSchema, context: { req, res } };
+} ) );
 this.app.use( '/graphiql', graphiqlExpress( { endpointURL: '/graphql' } ) );
 this.app.listen( 3000, () => {
     console.log( 'Up and running !' );
