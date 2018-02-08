@@ -64,9 +64,8 @@ aerographql-core@^0.0.2:
   dependencies:
     reflect-metadata "^0.1.10"
 
-aerographql-schema@^0.0.18:
+"aerographql-schema@file:../../packages/packages/schema":
   version "0.0.18"
-  resolved "https://registry.yarnpkg.com/aerographql-schema/-/aerographql-schema-0.0.18.tgz#41e7c436485dc516cc028f8ac2b420e653fa0d5d"
   dependencies:
     aerographql-core "^0.0.2"
     graphql "^0.12.3"

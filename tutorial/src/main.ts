@@ -2,8 +2,7 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 
-import { Injectable } from 'aerographql-core';
-import { Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql-schema';
+import { Injectable, Middleware, BaseMiddleware , Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql-schema';
 
 /** 
  * Fake Database objects
@@ -14,27 +13,35 @@ let users: User[] = [
     { admin: false, age: 28, description: 'Decription of Steeve', name: 'Steeve', id: '3' }
 ];
 
-let todos: { [ key: string ]: (PonctualTodo | RecurentTodo) [] } =
+let todos: { [ key: string ]: ( PonctualTodo | RecurentTodo )[] } =
     {
         Bob: [
             { id: '0', title: 'Todo1', content: 'Bob Todo1 content', occurence: 'Every Week' },
-            { id: '1', title: 'Todo2', content: 'Bob Todo2 content', date: 'Friday'  },
-            { id: '2', title: 'Todo3', content: 'Bob Todo3 content', occurence: 'Every Day'  }
+            { id: '1', title: 'Todo2', content: 'Bob Todo2 content', date: 'Friday' },
+            { id: '2', title: 'Todo3', content: 'Bob Todo3 content', occurence: 'Every Day' }
         ],
         Alice: [
-            { id: '3', title: 'Todo1', content: 'Alice Todo1 content', date: 'Mondy'  },
-            { id: '4', title: 'Todo2', content: 'Alice Todo2 content', date: 'Saturday'  },
-            { id: '5', title: 'Todo3', content: 'Alice Todo3 content', occurence: 'Every Week'  } ],
+            { id: '3', title: 'Todo1', content: 'Alice Todo1 content', date: 'Mondy' },
+            { id: '4', title: 'Todo2', content: 'Alice Todo2 content', date: 'Saturday' },
+            { id: '5', title: 'Todo3', content: 'Alice Todo3 content', occurence: 'Every Week' } ],
         Steeve: [
-            { id: '6', title: 'Todo1', content: 'Steeve Todo1 content', occurence: 'Every Month'  },
-            { id: '7', title: 'Todo2', content: 'Steeve Todo2 content', date: 'Tuesday'  },
-            { id: '8', title: 'Todo3', content: 'Steeve Todo3 content', occurence: 'Every Day'  } ]
+            { id: '6', title: 'Todo1', content: 'Steeve Todo1 content', occurence: 'Every Month' },
+            { id: '7', title: 'Todo2', content: 'Steeve Todo2 content', date: 'Tuesday' },
+            { id: '8', title: 'Todo3', content: 'Steeve Todo3 content', occurence: 'Every Day' } ]
     };
+
+@Middleware()
+class AuthMiddleware implements BaseMiddleware<any> {
+    execute( src: any, args: any, context: any, options: any ) {
+        console.log( 'From the middleware' );
+        return false;
+    }
+}
 
 /** 
  * Custom service to interact with the DB
 */
-@Injectable() 
+@Injectable()
 class UserService {
     find( name: string ) {
         return users.find( u => u.name === name );
@@ -60,7 +67,7 @@ export class Todo {
     @Field() content: string = "Empty todo";
 }
 
-@ObjectDefinition( { implements: [Todo]  } )
+@ObjectDefinition( { implements: [ Todo ] } )
 export class PonctualTodo {
     @Field( { type: 'ID' } ) id: string;
     @Field() title: string = "";
@@ -68,7 +75,7 @@ export class PonctualTodo {
     @Field() date: string = "Date";
 }
 
-@ObjectDefinition( { implements: [Todo]  } )
+@ObjectDefinition( { implements: [ Todo ] } )
 export class RecurentTodo {
     @Field( { type: 'ID' } ) id: string;
     @Field() title: string = "";
@@ -81,13 +88,13 @@ export class UserImpl {
 
     @Resolver( { type: Todo, list: true} )
     todos( user: User, @Arg( { nullable: true } ) search: string ) {
-        return todos[user.name];
+        return todos[ user.name ];
     }
 }
 
-@ObjectImplementation( { name: 'RootQuery' } )
+@ObjectImplementation( { name: 'RootQuery', middlewares: [ { provider: AuthMiddleware } ]  } )
 export class RootQuery {
-    constructor( private userService: UserService ) {}
+    constructor( private userService: UserService ) { }
 
     @Resolver( { type: User } )
     user( @Arg() name: string ): User | Promise<User> {
