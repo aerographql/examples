@@ -3,7 +3,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as jsonwebtoken from 'jsonwebtoken';
 
-import { Injectable, Middleware, BaseMiddleware, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql';
+import { Injectable, Middleware, MiddlewareInterface, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql';
 /** 
  * Fake Database objects
 */
@@ -52,7 +52,7 @@ interface Context {
  * Authentication middleware
  */
 @Middleware()
-class AuthMiddleware implements BaseMiddleware<any> {
+class AuthMiddleware implements MiddlewareInterface<any> {
     constructor( private userService: UserService ) { }
     execute( src: any, args: any, context: Context, options: any ) {
         let token  = context.req.headers[ 'Authorization' ] as string;
