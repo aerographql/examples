@@ -64,9 +64,9 @@ accepts@~1.3.4:
     mime-types "~2.1.16"
     negotiator "0.6.1"
 
-aerographql@^0.0.27:
-  version "0.0.27"
-  resolved "https://registry.yarnpkg.com/aerographql/-/aerographql-0.0.27.tgz#e11c01118e9a6563d5a662e18c5e2d0c766b0b18"
+aerographql@^0.0.29:
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/aerographql/-/aerographql-0.0.29.tgz#f9ffbcc390358139e8684408e9ec00437fcb4cef"
   dependencies:
     reflect-metadata "^0.1.12"
 
