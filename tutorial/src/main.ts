@@ -3,8 +3,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as jsonwebtoken from 'jsonwebtoken';
 
-import { Injectable, Middleware, BaseMiddleware, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql-schema';
-
+import { Injectable, Middleware, BaseMiddleware, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql';
 /** 
  * Fake Database objects
 */
