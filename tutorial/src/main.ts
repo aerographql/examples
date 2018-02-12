@@ -4,6 +4,7 @@ import * as bodyParser from 'body-parser';
 import * as jsonwebtoken from 'jsonwebtoken';
 
 import { Injectable, Middleware, MiddlewareInterface, Field, ObjectDefinition, ObjectImplementation, Resolver, Arg, Schema, BaseSchema, Interface } from 'aerographql';
+
 /** 
  * Fake Database objects
 */
@@ -123,7 +124,7 @@ export class RootQuery {
         return this.userService.find( name );
     }
 
-    @Resolver( { type: User, nullable: true, middlewares: [ { provider: AuthMiddleware, resultName: 'user' } ] } )
+    @Resolver( { type: User, nullable: true, middlewares: [ { middleware: AuthMiddleware, resultName: 'user' } ] } )
     viewer( previous: any, context:Context ): User | Promise<User> {
         return context.user;
     }
